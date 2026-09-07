@@ -1,7 +1,7 @@
 import api from "../../services/api/axios";
 
 const login = async (credentials) => {
-  const response = await api.post("/auth/login", credentials);
+  const response = await api.post("/api/auth/login", credentials);
 
   if (response.data) {
     localStorage.setItem("auth", JSON.stringify(response.data));
@@ -11,7 +11,7 @@ const login = async (credentials) => {
 };
 
 const register = async (userData) => {
-  const response = await api.post("/auth/register", userData);
+  const response = await api.post("/api/auth/register", userData);
 
   return response.data;
 };

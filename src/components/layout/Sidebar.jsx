@@ -11,9 +11,11 @@ import {
 import { NavLink } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "../../features/auth/authSlice";
+import { useNavigate } from "react-router-dom";
 
 function Sidebar({ isOpen, onClose }) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const menuItems = [
     {
@@ -45,7 +47,7 @@ function Sidebar({ isOpen, onClose }) {
 
   const handleLogout = () => {
     dispatch(logout());
-    window.location.href = "/login";
+    navigate("/login");
   };
 
   return (

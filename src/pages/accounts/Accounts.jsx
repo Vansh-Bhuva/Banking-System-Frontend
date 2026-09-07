@@ -1,70 +1,108 @@
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { CreditCard, Eye, Plus } from "lucide-react";
 
-import { mockAccounts } from "../../utils/mockData";
+import { getAccounts } from "../../features/account/accountSlice";
 
 function Accounts() {
+  const dispatch = useDispatch();
+
+  const { accounts, isLoading, isError, message } = useSelector(
+    (state) => state.account,
+  );
+
+  useEffect(() => {
+    dispatch(getAccounts());
+  }, [dispatch]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <p>Loading accounts...</p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-red-500">{message}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">My Accounts</h1>
-
-          <p className="mt-1 text-sm text-slate-500">
-            Manage and view all your bank accounts.
-          </p>
+          <h1 className="text-2xl font-bold">My Accounts</h1>
+          <p className="text-slate-500">Manage your banking accounts</p>
         </div>
 
-        <button className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700">
+        <Link
+          to="/accounts/create"
+          className="flex items-center gap-2 rounded-lg px-4 py-2 bg-blue-600 text-white"
+        >
           <Plus size={18} />
-          Open Account
-        </button>
+          Create Account
+        </Link>
       </div>
 
-      {/* Account Cards */}
+      {accounts.length === 0 ? (
+        <div className="rounded-xl border p-10 text-center">
+          <CreditCard className="mx-auto mb-3" size={40} />
+          <h2 className="text-lg font-semibold">No accounts found</h2>
+          <p className="text-slate-500">You don't have any accounts yet.</p>
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {accounts.map((account) => (
+            <div
+              key={account.accountNumber}
+              className="rounded-xl border bg-white p-6 shadow-sm"
+            >
+              <div className="flex items-center justify-between">
+                <CreditCard size={28} />
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {mockAccounts.map((account) => (
-          <div
-            key={account.id}
-            className="rounded-2xl bg-white p-6 shadow-sm transition hover:shadow-md"
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                <CreditCard size={23} />
+                <Link
+                  to={`/accounts/${account.accountNumber}`}
+                  className="text-blue-600"
+                >
+                  <Eye size={20} />
+                </Link>
               </div>
 
-              <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-600">
-                {account.status}
-              </span>
+              <div className="mt-5">
+                <p className="text-sm text-slate-500">Account Number</p>
+
+                <p className="font-semibold">{account.accountNumber}</p>
+              </div>
+
+              <div className="mt-4">
+                <p className="text-sm text-slate-500">Account Type</p>
+
+                <p className="font-semibold">{account.accountType}</p>
+              </div>
+
+              <div className="mt-4">
+                <p className="text-sm text-slate-500">Balance</p>
+
+                <p className="text-xl font-bold">
+                  ₹{Number(account.balance || 0).toLocaleString()}
+                </p>
+              </div>
+
+              <Link
+                to={`/accounts/${account.accountNumber}`}
+                className="mt-5 block rounded-lg bg-slate-900 px-4 py-2 text-center text-white"
+              >
+                View Details
+              </Link>
             </div>
-
-            <div className="mt-6">
-              <p className="text-sm text-slate-500">{account.accountType}</p>
-
-              <h2 className="mt-2 text-3xl font-bold text-slate-900">
-                ₹{account.balance.toLocaleString("en-IN")}
-              </h2>
-
-              <p className="mt-3 text-sm text-slate-500">Account No.</p>
-
-              <p className="font-medium text-slate-700">
-                **** **** {account.accountNumber.slice(-4)}
-              </p>
-            </div>
-
-            <Link
-              to={`/accounts/${account.id}`}
-              className="mt-6 flex items-center justify-center gap-2 rounded-lg bg-slate-100 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-200"
-            >
-              <Eye size={17} />
-              View Details
-            </Link>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

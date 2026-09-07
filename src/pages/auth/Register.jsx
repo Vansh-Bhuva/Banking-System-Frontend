@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { register as registerUser } from "../../features/auth/authSlice";
+import { register } from "../../features/auth/authSlice";
 import { UserPlus } from "lucide-react";
 
 function Register() {
@@ -13,7 +13,7 @@ function Register() {
   );
 
   const {
-    register,
+    register: formRegister,
     handleSubmit,
     watch,
     formState: { errors },
@@ -22,20 +22,20 @@ function Register() {
   const password = watch("password");
 
   const onSubmit = async (data) => {
-    const result = await dispatch(registerUser(data));
+    const { confirmPassword, ...registerData } = data;
 
-    if (registerUser.fulfilled.match(result)) {
+    const result = await dispatch(register(registerData));
+
+    if (register.fulfilled.match(result)) {
       navigate("/login");
     }
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
-
+        {/* Header */}
         <div className="mb-8 text-center">
-
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white">
             <UserPlus size={24} />
           </div>
@@ -47,9 +47,9 @@ function Register() {
           <p className="mt-2 text-sm text-slate-500">
             Create your banking account
           </p>
-
         </div>
 
+        {/* Error Message */}
         {isError && (
           <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
             {message}
@@ -58,23 +58,21 @@ function Register() {
 
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="space-y-4"
+          className="space-y-5"
         >
-
           {/* Name */}
-
           <div>
             <label className="mb-2 block text-sm font-medium">
-              Full Name
+              Name
             </label>
 
             <input
               type="text"
-              {...register("name", {
+              placeholder="Enter your name"
+              {...formRegister("name", {
                 required: "Name is required",
               })}
               className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
-              placeholder="Enter your full name"
             />
 
             {errors.name && (
@@ -85,7 +83,6 @@ function Register() {
           </div>
 
           {/* Email */}
-
           <div>
             <label className="mb-2 block text-sm font-medium">
               Email
@@ -93,11 +90,15 @@ function Register() {
 
             <input
               type="email"
-              {...register("email", {
+              placeholder="Enter your email"
+              {...formRegister("email", {
                 required: "Email is required",
+                pattern: {
+                  value: /^\S+@\S+$/i,
+                  message: "Invalid email",
+                },
               })}
               className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
-              placeholder="Enter your email"
             />
 
             {errors.email && (
@@ -107,31 +108,7 @@ function Register() {
             )}
           </div>
 
-          {/* Phone */}
-
-          <div>
-            <label className="mb-2 block text-sm font-medium">
-              Phone
-            </label>
-
-            <input
-              type="tel"
-              {...register("phone", {
-                required: "Phone is required",
-              })}
-              className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
-              placeholder="Enter your phone number"
-            />
-
-            {errors.phone && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.phone.message}
-              </p>
-            )}
-          </div>
-
           {/* Password */}
-
           <div>
             <label className="mb-2 block text-sm font-medium">
               Password
@@ -139,15 +116,15 @@ function Register() {
 
             <input
               type="password"
-              {...register("password", {
+              placeholder="Enter your password"
+              {...formRegister("password", {
                 required: "Password is required",
                 minLength: {
-                  value: 8,
-                  message: "Password must be at least 8 characters",
+                  value: 6,
+                  message: "Password must be at least 6 characters",
                 },
               })}
               className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
-              placeholder="Create a password"
             />
 
             {errors.password && (
@@ -158,7 +135,6 @@ function Register() {
           </div>
 
           {/* Confirm Password */}
-
           <div>
             <label className="mb-2 block text-sm font-medium">
               Confirm Password
@@ -166,13 +142,13 @@ function Register() {
 
             <input
               type="password"
-              {...register("confirmPassword", {
+              placeholder="Confirm your password"
+              {...formRegister("confirmPassword", {
                 required: "Please confirm your password",
                 validate: (value) =>
                   value === password || "Passwords do not match",
               })}
               className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
-              placeholder="Confirm your password"
             />
 
             {errors.confirmPassword && (
@@ -182,16 +158,17 @@ function Register() {
             )}
           </div>
 
+          {/* Register Button */}
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-lg bg-blue-600 py-3 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            className="w-full rounded-lg bg-blue-600 py-3 font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
           >
-            {isLoading ? "Creating Account..." : "Create Account"}
+            {isLoading ? "Creating account..." : "Create Account"}
           </button>
-
         </form>
 
+        {/* Login Link */}
         <p className="mt-6 text-center text-sm text-slate-500">
           Already have an account?{" "}
 
@@ -201,9 +178,7 @@ function Register() {
           >
             Login
           </Link>
-
         </p>
-
       </div>
     </div>
   );

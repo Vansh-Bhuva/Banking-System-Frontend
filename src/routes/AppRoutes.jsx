@@ -7,6 +7,7 @@ import Dashboard from "../pages/dashboard/Dashboard";
 
 import Accounts from "../pages/accounts/Accounts";
 import AccountDetails from "../pages/accounts/AccountDetails";
+import CreateAccount from "../pages/accounts/CreateAccount";
 
 import Transactions from "../pages/transactions/Transactions";
 import TransactionDetails from "../pages/transactions/TransactionDetails";
@@ -34,6 +35,7 @@ function AppRoutes() {
 
             {/* Accounts */}
             <Route path="/accounts" element={<Accounts />} />
+            <Route path="/accounts/create" element={<CreateAccount />} />
             <Route path="/accounts/:id" element={<AccountDetails />} />
 
             {/* Transactions */}

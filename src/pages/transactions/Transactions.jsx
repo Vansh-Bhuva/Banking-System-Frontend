@@ -1,15 +1,57 @@
 import { Link } from "react-router-dom";
 import { ArrowDownLeft, ArrowUpRight, Eye, Search } from "lucide-react";
-import { useState } from "react";
-import { mockTransactions } from "../../utils/mockData";
+import { useEffect, useState } from "react";
+import api from "../../services/api/axios";
 
 function Transactions() {
+  const [accountNumber, setAccountNumber] = useState("");
   const [search, setSearch] = useState("");
   const [type, setType] = useState("ALL");
 
-  const filteredTransactions = mockTransactions.filter((transaction) => {
-    const matchesSearch = transaction.title
-      .toLowerCase()
+  useEffect(() => {
+    const fetchAccount = async () => {
+      try {
+        const response = await api.get("/api/v1/accounts");
+        if (response.data.length > 0) {
+          setAccountNumber(response.data[0].accountNumber);
+        }
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to load account");
+      }
+    };
+
+    fetchAccount();
+  }, []);
+
+  const [transactions, setTransactions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+  if (!accountNumber) return;
+
+  const fetchTransactions = async () => {
+    try {
+      const response = await api.get(
+        `/api/v1/transactions/account/${accountNumber}`
+      );
+
+      setTransactions(response.data);
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Failed to load transactions"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  fetchTransactions();
+}, [accountNumber]);
+
+  const filteredTransactions = transactions.filter((transaction) => {
+    const matchesSearch = transaction.description
+      ?.toLowerCase()
       .includes(search.toLowerCase());
 
     const matchesType = type === "ALL" || transaction.type === type;
@@ -50,8 +92,6 @@ function Transactions() {
           className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm outline-none"
         >
           <option value="ALL">All Transactions</option>
-          <option value="CREDIT">Credit</option>
-          <option value="DEBIT">Debit</option>
         </select>
       </div>
 

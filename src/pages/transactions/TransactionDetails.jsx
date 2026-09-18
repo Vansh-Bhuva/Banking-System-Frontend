@@ -1,13 +1,35 @@
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { mockTransactions } from "../../utils/mockData";
+import { useEffect, useState } from "react";
+import api from "../../services/api/axios";
 
 function TransactionDetails() {
   const { id } = useParams();
 
-  const transaction = mockTransactions.find((item) => item.id === Number(id));
+  const [transaction, setTransaction] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  if (!transaction) {
+  useEffect(() => {
+    const fetchTransaction = async () => {
+      try {
+        const response = await api.get(`/api/v1/transactions/${id}`);
+        setTransaction(response.data);
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to load transaction");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTransaction();
+  }, [id]);
+
+  if (isLoading) {
+    return <div>Loading transaction...</div>;
+  }
+
+  if (error || !transaction) {
     return (
       <div className="rounded-xl bg-white p-8 text-center shadow-sm">
         <h2 className="text-xl font-semibold text-slate-800">
@@ -42,7 +64,7 @@ function TransactionDetails() {
           <div>
             <p className="text-sm text-slate-500">Transaction</p>
             <p className="mt-1 font-medium text-slate-900">
-              {transaction.title}
+              {transaction.description || "Transaction"}
             </p>
           </div>
 
@@ -59,7 +81,7 @@ function TransactionDetails() {
               }`}
             >
               {isCredit ? "+" : "-"}₹
-              {transaction.amount.toLocaleString("en-IN")}
+              {Number(transaction.amount).toLocaleString("en-IN")}
             </p>
           </div>
 
@@ -73,7 +95,7 @@ function TransactionDetails() {
           <div>
             <p className="text-sm text-slate-500">Date</p>
             <p className="mt-1 font-medium text-slate-900">
-              {transaction.date}
+              {new Date(transaction.createdAt).toLocaleString("en-IN")}
             </p>
           </div>
 
@@ -83,6 +105,36 @@ function TransactionDetails() {
               {transaction.status}
             </span>
           </div>
+
+          <div>
+            <p className="text-sm text-slate-500">Sender Account</p>
+            <p className="mt-1 font-medium text-slate-900">
+              {transaction.senderAccountNumber}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-slate-500">Receiver Account</p>
+            <p className="mt-1 font-medium text-slate-900">
+              {transaction.receiverAccountNumber}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-slate-500">Reference Number</p>
+            <p className="mt-1 font-medium text-slate-900">
+              {transaction.referenceNumber || "N/A"}
+            </p>
+          </div>
+
+          {transaction.failureReason && (
+            <div>
+              <p className="text-sm text-slate-500">Failure Reason</p>
+              <p className="mt-1 font-medium text-red-600">
+                {transaction.failureReason}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
